@@ -4,22 +4,20 @@ import json
 lessons = []
 base_dir = os.path.dirname(os.path.abspath(__file__))
 
-# 搜尋 lessons 資料夾（相容大小寫）
-target_dir = None
-for item in os.listdir(base_dir):
-    if item.lower() == "lessons" and os.path.isdir(os.path.join(base_dir, item)):
-        target_dir = os.path.join(base_dir, item)
-        break
+print("=== Starting build.py ===")
+print(f"Base Directory: {base_dir}")
 
-print(f"Target lessons directory: {target_dir}")
-
-if target_dir:
-    for filename in os.listdir(target_dir):
-        if filename.endswith(".json") or filename.endswith(".md"):
-            filepath = os.path.join(target_dir, filename)
-            print(f"Processing file: {filepath}")
+# 1. 搜救邏輯：掃描全專案目錄下的所有 .json 檔案（不論資料夾大小寫）
+for root, dirs, files in os.walk(base_dir):
+    # 忽略 .git 和 .github 目錄
+    if '.git' in root or '.github' in root:
+        continue
+    for file in files:
+        if file.endswith('.json') and file != 'package.json':
+            filepath = os.path.join(root, file)
+            print(f"Found JSON file: {filepath}")
             try:
-                with open(filepath, "r", encoding="utf-8") as f:
+                with open(filepath, 'r', encoding='utf-8') as f:
                     content = f.read().strip()
                     if content:
                         data = json.loads(content)
@@ -27,15 +25,16 @@ if target_dir:
                             lessons.extend(data)
                         elif isinstance(data, dict):
                             lessons.append(data)
+                        print(f"Successfully loaded data from {file}")
             except Exception as e:
-                print(f"Error reading {filename}: {e}")
+                print(f"Error reading {file}: {e}")
 
-# 按 ID 由大到小排序
+# 2. 依照 ID 排序（防呆轉 int）
 lessons.sort(key=lambda x: int(x.get("id", 0)), reverse=True)
 
-# 寫入 data.js
+# 3. 強制寫入 data.js
 output_path = os.path.join(base_dir, "data.js")
 with open(output_path, "w", encoding="utf-8") as f:
     f.write(f"window.ALL_LESSONS_DATA = {json.dumps(lessons, ensure_ascii=False)};\n")
 
-print(f"Successfully generated data.js with {len(lessons)} lessons.")
+print(f"=== Successfully written {len(lessons)} lessons to data.js ===")
