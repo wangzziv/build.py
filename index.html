@@ -53,7 +53,31 @@
   <script src="data.js"></script>
   <script>
     let ALL_LESSONS = window.ALL_LESSONS_DATA || [];
-    let currentTabId = ALL_LESSONS.length > 0 ? ALL_LESSONS[0].id : 1;
+
+    async function initApp() {
+      // 如果 data.js 讀取不到，自動發起 fetch 去抓取原始的 lessons JSON 檔作為備援
+      if (!ALL_LESSONS || ALL_LESSONS.length === 0) {
+        try {
+          const res = await fetch('./lessons/1-15.json');
+          if (res.ok) {
+            ALL_LESSONS = await res.json();
+          }
+        } catch (e) {
+          console.log('Fetch backup failed:', e);
+        }
+      }
+
+      if (ALL_LESSONS && ALL_LESSONS.length > 0) {
+        ALL_LESSONS.sort((a, b) => b.id - a.id);
+        currentTabId = ALL_LESSONS[0].id;
+        renderTabs(ALL_LESSONS);
+        selectTab(currentTabId);
+      } else {
+        document.getElementById('mainContent').innerHTML = '<div class="empty-state">尚未讀取到資料。</div>';
+      }
+    }
+
+    let currentTabId = 1;
 
     function renderTabs(data) {
       const tabList = document.getElementById('tabList');
@@ -87,15 +111,7 @@
       renderTabs(filtered);
     }
 
-    window.onload = () => {
-      if (ALL_LESSONS.length > 0) {
-        currentTabId = ALL_LESSONS[0].id;
-        renderTabs(ALL_LESSONS);
-        selectTab(currentTabId);
-      } else {
-        document.getElementById('mainContent').innerHTML = '<div class="empty-state">尚未讀取到資料，請在 lessons/ 資料夾放入課程檔。</div>';
-      }
-    };
+    window.onload = initApp;
   </script>
 </body>
 </html>
