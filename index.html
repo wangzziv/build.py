@@ -36,6 +36,7 @@
     .app-box { background-color: #f1f3f5; padding: 18px 22px; border-radius: 8px; margin-top: 12px; font-size: 0.95rem; line-height: 1.7; }
     .mindset-box { background-color: #f8f9fa; border: 1px dashed var(--accent-color); padding: 22px; border-radius: 8px; line-height: 1.7; }
     .empty-state { text-align: center; padding: 60px; color: var(--text-muted); }
+    .debug-info { color: #d9534f; font-family: monospace; font-size: 0.85rem; margin-top: 15px; background: #fff0f0; padding: 10px; border-radius: 6px; }
   </style>
 </head>
 <body>
@@ -50,34 +51,66 @@
     <div class="empty-state">資料載入中...</div>
   </div>
 
-  <script src="data.js"></script>
   <script>
-    let ALL_LESSONS = window.ALL_LESSONS_DATA || [];
+    let ALL_LESSONS = [];
+    let currentTabId = 1;
+
+    // 動態載入腳本並破除瀏覽器快取
+    function loadScript(src) {
+      return new Promise((resolve, reject) => {
+        const script = document.createElement('script');
+        script.src = src + '?v=' + new Date().getTime(); // 強制帶入時間戳記避免舊快取
+        script.onload = resolve;
+        script.onerror = reject;
+        document.body.appendChild(script);
+      });
+    }
 
     async function initApp() {
-      // 如果 data.js 讀取不到，自動發起 fetch 去抓取原始的 lessons JSON 檔作為備援
+      const mainContent = document.getElementById('mainContent');
+      
+      // 1. 嘗試載入 data.js
+      try {
+        await loadScript('data.js');
+        if (window.ALL_LESSONS_DATA && window.ALL_LESSONS_DATA.length > 0) {
+          ALL_LESSONS = window.ALL_LESSONS_DATA;
+        }
+      } catch (e) {
+        console.log('data.js 載入失敗，準備切換至備援方案');
+      }
+
+      // 2. 若 data.js 無資料，嘗試直抓 lessons/1-15.json
       if (!ALL_LESSONS || ALL_LESSONS.length === 0) {
         try {
-          const res = await fetch('./lessons/1-15.json');
+          const res = await fetch('./lessons/1-15.json?v=' + new Date().getTime());
           if (res.ok) {
             ALL_LESSONS = await res.json();
           }
         } catch (e) {
-          console.log('Fetch backup failed:', e);
+          console.log('JSON 備援讀取失敗:', e);
         }
       }
 
+      // 3. 渲染頁面
       if (ALL_LESSONS && ALL_LESSONS.length > 0) {
         ALL_LESSONS.sort((a, b) => b.id - a.id);
         currentTabId = ALL_LESSONS[0].id;
         renderTabs(ALL_LESSONS);
         selectTab(currentTabId);
       } else {
-        document.getElementById('mainContent').innerHTML = '<div class="empty-state">尚未讀取到資料。</div>';
+        mainContent.innerHTML = `
+          <div class="empty-state">
+            <h3>尚未讀取到資料</h3>
+            <p>請檢查 GitHub 儲存庫根目錄下是否有 <code>data.js</code> 檔案。</p>
+            <div class="debug-info">
+              狀態診斷：<br>
+              • window.ALL_LESSONS_DATA: ${typeof window.ALL_LESSONS_DATA} (${window.ALL_LESSONS_DATA ? window.ALL_LESSONS_DATA.length : 0} 筆)<br>
+              • ALL_LESSONS 陣列長度: ${ALL_LESSONS.length}
+            </div>
+          </div>
+        `;
       }
     }
-
-    let currentTabId = 1;
 
     function renderTabs(data) {
       const tabList = document.getElementById('tabList');
