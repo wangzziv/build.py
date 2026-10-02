@@ -1,0 +1,33 @@
+name: Build and Update Lessons Data
+
+on:
+  push:
+    paths:
+      - 'lessons/**'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+
+      - name: Run Build Script
+        run: python build.py
+
+      - name: Commit and Push Updated Data
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add data.js
+          git diff-index --quiet HEAD || git commit -m "Auto-update data.js"
+          git push
