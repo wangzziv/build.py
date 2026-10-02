@@ -2,17 +2,22 @@ import os
 import json
 
 lessons = []
-# 取得當前腳本所在資料夾的絕對路徑
 base_dir = os.path.dirname(os.path.abspath(__file__))
-lessons_dir = os.path.join(base_dir, "lessons")
 
-print(f"Scanning directory: {lessons_dir}")
+# 搜尋 lessons 資料夾（相容大小寫）
+target_dir = None
+for item in os.listdir(base_dir):
+    if item.lower() == "lessons" and os.path.isdir(os.path.join(base_dir, item)):
+        target_dir = os.path.join(base_dir, item)
+        break
 
-if os.path.exists(lessons_dir):
-    for filename in os.listdir(lessons_dir):
+print(f"Target lessons directory: {target_dir}")
+
+if target_dir:
+    for filename in os.listdir(target_dir):
         if filename.endswith(".json") or filename.endswith(".md"):
-            filepath = os.path.join(lessons_dir, filename)
-            print(f"Reading file: {filepath}")
+            filepath = os.path.join(target_dir, filename)
+            print(f"Processing file: {filepath}")
             try:
                 with open(filepath, "r", encoding="utf-8") as f:
                     content = f.read().strip()
@@ -25,7 +30,7 @@ if os.path.exists(lessons_dir):
             except Exception as e:
                 print(f"Error reading {filename}: {e}")
 
-# 按 id 由大到小排序
+# 按 ID 由大到小排序
 lessons.sort(key=lambda x: int(x.get("id", 0)), reverse=True)
 
 # 寫入 data.js
