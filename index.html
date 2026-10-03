@@ -50,11 +50,7 @@
     <div class="empty-state">資料載入中...</div>
   </div>
 
-  <!-- 利用寫入腳本方式帶入防快取時間戳記 -->
-  <script>
-    document.write('<script src="data.js?v=' + new Date().getTime() + '"><\/script>');
-  </script>
-
+  <script src="data.js"></script>
   <script>
     let ALL_LESSONS = window.ALL_LESSONS_DATA || [];
     let currentTabId = 1;
