@@ -56,11 +56,9 @@
 
     async function initApp() {
       const mainContent = document.getElementById('mainContent');
-      
-      // 自動探測與載入邏輯（每 15 課為一個區間檔案）
       let batchIndex = 0;
       let consecutiveFailures = 0;
-      const MAX_BATCHES = 100; // 最多掃描到第 1500 課
+      const MAX_BATCHES = 100;
 
       while (batchIndex < MAX_BATCHES && consecutiveFailures < 2) {
         const start = batchIndex * 15 + 1;
@@ -73,7 +71,7 @@
             const data = await res.json();
             if (Array.isArray(data) && data.length > 0) {
               ALL_LESSONS.push(...data);
-              consecutiveFailures = 0; // 成功抓到就重置失敗計數
+              consecutiveFailures = 0;
             }
           } else {
             consecutiveFailures++;
@@ -82,23 +80,6 @@
           consecutiveFailures++;
         }
         batchIndex++;
-      }
-
-      // 如果備用探測沒抓到，嘗試抓 index.json 作為後備相容
-      if (ALL_LESSONS.length === 0) {
-        try {
-          const indexRes = await fetch('./lessons/index.json?v=' + Date.now());
-          if (indexRes.ok) {
-            const fileList = await indexRes.json();
-            const fetchPromises = fileList.map(file => 
-              fetch(`./lessons/${file}?v=` + Date.now()).then(res => res.json())
-            );
-            const results = await Promise.all(fetchPromises);
-            ALL_LESSONS = results.flat();
-          }
-        } catch (e) {
-          console.log('後備索引讀取跳過');
-        }
       }
 
       if (ALL_LESSONS && ALL_LESSONS.length > 0) {
