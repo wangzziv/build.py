@@ -60,43 +60,46 @@
         if (res.ok) {
           const data = await res.json();
           if (Array.isArray(data) && data.length > 0) return data;
+          if (data && typeof data === 'object' && !Array.isArray(data)) return [data];
         }
       } catch (e) {}
       return null;
     }
 
     async function initApp() {
-      const mainContent = document.getElementById('mainContent');
-      let batchIndex = 0;
+      // 1. 載入早期舊批次檔 (1-15.json, 16-30.json, 31-45.json, 46-60.json)
+      const oldBatches = ['1-15.json', '16-30.json', '31-45.json', '46-60.json'];
+      for (const batchFile of oldBatches) {
+        const data = await tryFetchFile(batchFile);
+        if (data) ALL_LESSONS.push(...data);
+      }
+
+      // 2. 自動探測第 61 課以後的獨立單課檔 (61.json, 62.json, 63.json ...)
+      let lessonId = 61;
       let consecutiveFailures = 0;
 
-      while (batchIndex < 100 && consecutiveFailures < 2) {
-        const start = batchIndex * 15 + 1;
-        const end = (batchIndex + 1) * 15;
-        
-        // 同時嘗試 15 區間檔名（如 61-75.json）與實際進度檔名（如 61-72.json）
-        let data = await tryFetchFile(`${start}-${end}.json`);
-        
-        if (data) {
-          ALL_LESSONS.push(...data);
+      while (lessonId < 1000 && consecutiveFailures < 3) {
+        const singleData = await tryFetchFile(`${lessonId}.json`);
+        if (singleData) {
+          ALL_LESSONS.push(...singleData);
           consecutiveFailures = 0;
         } else {
           consecutiveFailures++;
         }
-        batchIndex++;
+        lessonId++;
       }
 
+      // 3. 整理與顯示
       if (ALL_LESSONS && ALL_LESSONS.length > 0) {
-        // 去重並按 ID 降冪排序
         const map = new Map();
-        ALL_LESSONS.forEach(item => map.set(item.id, item));
+        ALL_LESSONS.forEach(item => map.set(Number(item.id), item));
         ALL_LESSONS = Array.from(map.values()).sort((a, b) => b.id - a.id);
         
         currentTabId = ALL_LESSONS[0].id;
         renderTabs(ALL_LESSONS);
         selectTab(currentTabId);
       } else {
-        mainContent.innerHTML = '<div class="empty-state">尚未讀取到資料，請確認 lessons/ 目錄下是否有課程 JSON 檔。</div>';
+        document.getElementById('mainContent').innerHTML = '<div class="empty-state">尚未讀取到資料，請確認 lessons/ 目錄下是否有課程 JSON 檔。</div>';
       }
     }
 
