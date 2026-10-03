@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>帝王心術與國學筆記</title>
+  <title>每日國學筆記</title>
   <style>
     :root {
       --bg-primary: #f8f9fa; 
@@ -248,7 +248,7 @@
   <!-- 手機端頂部列 -->
   <div class="mobile-header">
     <button class="menu-toggle-btn" onclick="toggleSidebar()" aria-label="選單">☰</button>
-    <div class="mobile-title">帝王心術與國學筆記</div>
+    <div class="mobile-title">每日國學筆記</div>
     <button class="theme-toggle-btn" onclick="toggleTheme()" id="themeBtnMobile">🌙</button>
   </div>
 
@@ -396,7 +396,7 @@
       lesson.quotes.forEach(q => {
         quotesHtml += `<div class="quote-item"><strong>【出處】</strong> ${q.source}<br><strong>【原文】</strong> ${q.text}<br><strong>【白話解讀】</strong> ${q.meaning}<div class="app-box"><strong>💼 現代交流與商務應用：</strong><br>${q.app}</div></div>`;
       });
-      mainContent.innerHTML = `<div class="lesson-card"><div class="meta-header"><span class="date-badge">第 ${lesson.id} 課 ｜ ${lesson.date}</span><h1>${lesson.title}</h1></div><div class="section-block"><div class="section-title">📄 國學經典典故（談吐墨水）</div><div class="quote-box">${quotesHtml}</div></div><div class="section-block"><div class="section-title">👑 帝王心術與權謀解析</div><div class="mindset-box"><strong>【${lesson.mindset.title}】</strong><br><br>${lesson.mindset.content}</div></div></div>`;
+      mainContent.innerHTML = `<div class="lesson-card"><div class="meta-header"><span class="date-badge">第 ${lesson.id} 課 ｜ ${lesson.date}</span><h1>${lesson.title}</h1></div><div class="section-block"><div class="section-title">📄 國學經典典故（談吐墨水）</div><div class="quote-box">${quotesHtml}</div></div><div class="section-block"><div class="section-title">👑 心術與權謀解析</div><div class="mindset-box"><strong>【${lesson.mindset.title}】</strong><br><br>${lesson.mindset.content}</div></div></div>`;
     }
 
     function filterTabs() {
