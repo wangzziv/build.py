@@ -50,8 +50,10 @@
     <div class="empty-state">資料載入中...</div>
   </div>
 
-  <!-- 直接引用資料檔 -->
-  <script src="data.js"></script>
+  <!-- 利用寫入腳本方式帶入防快取時間戳記 -->
+  <script>
+    document.write('<script src="data.js?v=' + new Date().getTime() + '"><\/script>');
+  </script>
 
   <script>
     let ALL_LESSONS = window.ALL_LESSONS_DATA || [];
@@ -96,7 +98,7 @@
         renderTabs(ALL_LESSONS);
         selectTab(currentTabId);
       } else {
-        document.getElementById('mainContent').innerHTML = '<div class="empty-state">尚未讀取到資料，請確認 data.js 是否存在。</div>';
+        document.getElementById('mainContent').innerHTML = '<div class="empty-state">尚未讀取到資料，請確認 data.js 是否正確設定。</div>';
       }
     };
   </script>
