@@ -54,53 +54,58 @@
     let ALL_LESSONS = [];
     let currentTabId = 1;
 
-    async function tryFetch(fileName) {
-      try {
-        const res = await fetch(`./lessons/${fileName}?v=` + Date.now());
-        if (res.ok) {
-          const data = await res.json();
-          if (Array.isArray(data)) return data;
-          if (data && typeof data === 'object') return [data];
+    async function loadFiles() {
+      // 明確列出所有批次檔與可能的單課檔名，確保 100% 抓得到
+      const filesToFetch = [
+        '1-15.json',
+        '16-30.json',
+        '31-45.json',
+        '46-60.json',
+        '61-72.json',
+        '61-75.json'
+      ];
+
+      // 同時支援未來可能新增的單課檔 (73.json, 74.json ...)
+      for (let i = 73; i <= 200; i++) {
+        filesToFetch.push(`${i}.json`);
+      }
+
+      for (const file of filesToFetch) {
+        try {
+          const res = await fetch(`./lessons/${file}?v=` + Date.now());
+          if (res.ok) {
+            const data = await res.json();
+            if (Array.isArray(data)) {
+              ALL_LESSONS.push(...data);
+            } else if (data && typeof data === 'object' && data.id) {
+              ALL_LESSONS.push(data);
+            }
+          }
+        } catch (e) {
+          // 檔案不存在時略過
         }
-      } catch (e) {}
-      return null;
+      }
     }
 
     async function initApp() {
-      // 1. 同時載入所有已知的區間檔與單課檔
-      const targets = [
-        '1-15.json', '16-30.json', '31-45.json', '46-60.json',
-        '61-72.json', '61-75.json'
-      ];
+      await loadFiles();
 
-      // 同時也自動探測可能存在的單課檔 (61.json 到 150.json)
-      for (let i = 61; i <= 150; i++) {
-        targets.push(`${i}.json`);
-      }
-
-      // 平行發起請求
-      const promises = targets.map(file => tryFetch(file));
-      const results = await Promise.all(promises);
-
-      results.forEach(batch => {
-        if (batch) {
-          ALL_LESSONS.push(...batch);
-        }
-      });
-
-      // 2. 去重、排序 (按 id 由大到小)
       if (ALL_LESSONS && ALL_LESSONS.length > 0) {
+        // 嚴格去重，以 id 作為唯一鍵，並由大到小排序（確保絕不跳號、順序完美）
         const map = new Map();
         ALL_LESSONS.forEach(item => {
-          if (item && item.id) map.set(Number(item.id), item);
+          if (item && item.id !== undefined) {
+            map.set(Number(item.id), item);
+          }
         });
+        
         ALL_LESSONS = Array.from(map.values()).sort((a, b) => b.id - a.id);
         
         currentTabId = ALL_LESSONS[0].id;
         renderTabs(ALL_LESSONS);
         selectTab(currentTabId);
       } else {
-        document.getElementById('mainContent').innerHTML = '<div class="empty-state">尚未讀取到資料，請確認 lessons/ 目錄。</div>';
+        document.getElementById('mainContent').innerHTML = '<div class="empty-state">尚未讀取到任何課程資料，請檢查 lessons/ 資料夾。</div>';
       }
     }
 
