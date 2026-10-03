@@ -3,49 +3,271 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>每日國學筆記</title>
+  <title>帝王心術與國學筆記</title>
   <style>
     :root {
-      --bg-primary: #f8f9fa; --bg-secondary: #ffffff;
-      --text-main: #2b2d42; --text-muted: #6c757d;
-      --border-color: #e9ecef; --accent-color: #8d99ae;
-      --active-tab-bg: #edf2f4; --active-tab-border: #2b2d42; --card-bg: #fafafa;
+      --bg-primary: #f8f9fa; 
+      --bg-secondary: #ffffff;
+      --text-main: #2b2d42; 
+      --text-muted: #6c757d;
+      --border-color: #e9ecef; 
+      --accent-color: #8d99ae;
+      --active-tab-bg: #edf2f4; 
+      --active-tab-border: #2b2d42; 
+      --card-bg: #fafafa;
+      --quote-bg: #fafafa;
+      --app-bg: #f1f3f5;
+      --mindset-bg: #f8f9fa;
+      --shadow-color: rgba(0,0,0,0.04);
     }
+
+    [data-theme="dark"] {
+      --bg-primary: #121212; 
+      --bg-secondary: #1e1e1e;
+      --text-main: #e0e0e0; 
+      --text-muted: #a0a0a0;
+      --border-color: #2d2d2d; 
+      --accent-color: #718096;
+      --active-tab-bg: #2a2d32; 
+      --active-tab-border: #90caf9; 
+      --card-bg: #242424;
+      --quote-bg: #25282c;
+      --app-bg: #2d3137;
+      --mindset-bg: #1a1d21;
+      --shadow-color: rgba(0,0,0,0.3);
+    }
+
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: var(--bg-primary); color: var(--text-main); display: flex; height: 100vh; overflow: hidden; }
-    .sidebar { width: 360px; background-color: var(--bg-secondary); border-right: 1px solid var(--border-color); display: flex; flex-direction: column; flex-shrink: 0; }
-    .sidebar-header { padding: 16px; border-bottom: 1px solid var(--border-color); background-color: #ffffff; }
-    .sidebar-header h2 { font-size: 1.1rem; font-weight: 700; color: var(--text-main); margin-bottom: 12px; }
-    .search-input { width: 100%; padding: 8px 12px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 0.9rem; outline: none; }
+    body { 
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; 
+      background-color: var(--bg-primary); 
+      color: var(--text-main); 
+      display: flex; 
+      height: 100vh; 
+      overflow: hidden; 
+      transition: background-color 0.3s, color 0.3s;
+    }
+
+    /* 頂部手機列控制區 */
+    .mobile-header {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      height: 56px;
+      background-color: var(--bg-secondary);
+      border-bottom: 1px solid var(--border-color);
+      z-index: 1000;
+      padding: 0 16px;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .menu-toggle-btn {
+      background: none;
+      border: none;
+      font-size: 1.4rem;
+      color: var(--text-main);
+      cursor: pointer;
+      padding: 4px 8px;
+    }
+    .mobile-title {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+
+    /* 主題切換按鈕 */
+    .theme-toggle-btn {
+      background: none;
+      border: 1px solid var(--border-color);
+      border-radius: 20px;
+      padding: 4px 12px;
+      font-size: 0.85rem;
+      color: var(--text-main);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s;
+    }
+    .theme-toggle-btn:hover {
+      background-color: var(--active-tab-bg);
+    }
+
+    /* 左側側邊欄 */
+    .sidebar { 
+      width: 360px; 
+      background-color: var(--bg-secondary); 
+      border-right: 1px solid var(--border-color); 
+      display: flex; 
+      flex-direction: column; 
+      flex-shrink: 0; 
+      transition: transform 0.3s ease, background-color 0.3s;
+      z-index: 900;
+    }
+    .sidebar-header { 
+      padding: 16px; 
+      border-bottom: 1px solid var(--border-color); 
+      background-color: var(--bg-secondary); 
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .sidebar-title-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .sidebar-header h2 { font-size: 1.1rem; font-weight: 700; color: var(--text-main); }
+    .search-input { 
+      width: 100%; 
+      padding: 8px 12px; 
+      border: 1px solid var(--border-color); 
+      border-radius: 6px; 
+      font-size: 0.9rem; 
+      outline: none; 
+      background-color: var(--bg-primary);
+      color: var(--text-main);
+    }
     .tab-list { flex: 1; overflow-y: auto; list-style: none; }
-    .tab-item { padding: 14px 16px; border-bottom: 1px solid var(--border-color); cursor: pointer; border-left: 4px solid transparent; }
+    .tab-item { 
+      padding: 14px 16px; 
+      border-bottom: 1px solid var(--border-color); 
+      cursor: pointer; 
+      border-left: 4px solid transparent; 
+    }
     .tab-item:hover { background-color: var(--bg-primary); }
-    .tab-item.active { background-color: var(--active-tab-bg); border-left-color: var(--active-tab-border); font-weight: 600; }
+    .tab-item.active { 
+      background-color: var(--active-tab-bg); 
+      border-left-color: var(--active-tab-border); 
+      font-weight: 600; 
+    }
     .tab-item .lesson-num { font-size: 0.8rem; color: var(--text-muted); margin-bottom: 4px; }
     .tab-item .lesson-title { font-size: 0.92rem; line-height: 1.4; color: var(--text-main); word-break: break-word; white-space: normal; }
-    .main-content { flex: 1; overflow-y: auto; padding: 32px 40px; background-color: var(--bg-primary); }
-    .lesson-card { background-color: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 12px; padding: 32px; max-width: 950px; margin: 0 auto; box-shadow: 0 4px 12px rgba(0,0,0,0.03); }
+
+    /* 主要內容區 */
+    .main-content { 
+      flex: 1; 
+      overflow-y: auto; 
+      padding: 32px 40px; 
+      background-color: var(--bg-primary); 
+      transition: background-color 0.3s;
+    }
+    .lesson-card { 
+      background-color: var(--bg-secondary); 
+      border: 1px solid var(--border-color); 
+      border-radius: 12px; 
+      padding: 32px; 
+      max-width: 950px; 
+      margin: 0 auto; 
+      box-shadow: 0 4px 12px var(--shadow-color); 
+    }
     .meta-header { border-bottom: 2px solid var(--border-color); padding-bottom: 16px; margin-bottom: 24px; }
-    .meta-header .date-badge { display: inline-block; padding: 4px 10px; background-color: var(--active-tab-bg); border-radius: 4px; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 8px; }
+    .meta-header .date-badge { 
+      display: inline-block; 
+      padding: 4px 10px; 
+      background-color: var(--active-tab-bg); 
+      border-radius: 4px; 
+      font-size: 0.85rem; 
+      color: var(--text-muted); 
+      margin-bottom: 8px; 
+    }
     .meta-header h1 { font-size: 1.6rem; color: var(--text-main); }
     .section-block { margin-bottom: 28px; }
     .section-title { font-size: 1.1rem; font-weight: 700; color: var(--text-main); margin-bottom: 12px; }
-    .quote-box { background-color: var(--card-bg); border-left: 4px solid var(--active-tab-border); padding: 18px 22px; border-radius: 0 8px 8px 0; margin-bottom: 16px; font-size: 0.98rem; line-height: 1.7; }
-    .quote-item { margin-bottom: 16px; }
+    .quote-box { 
+      background-color: var(--quote-bg); 
+      border-left: 4px solid var(--active-tab-border); 
+      padding: 18px 22px; 
+      border-radius: 0 8px 8px 0; 
+      margin-bottom: 16px; 
+      font-size: 0.98rem; 
+      line-height: 1.7; 
+    }
+    .quote-item { margin-bottom: 20px; }
     .quote-item:last-child { margin-bottom: 0; }
-    .app-box { background-color: #f1f3f5; padding: 18px 22px; border-radius: 8px; margin-top: 12px; font-size: 0.95rem; line-height: 1.7; }
-    .mindset-box { background-color: #f8f9fa; border: 1px dashed var(--accent-color); padding: 22px; border-radius: 8px; line-height: 1.7; }
+    .app-box { 
+      background-color: var(--app-bg); 
+      padding: 18px 22px; 
+      border-radius: 8px; 
+      margin-top: 12px; 
+      font-size: 0.95rem; 
+      line-height: 1.7; 
+    }
+    .mindset-box { 
+      background-color: var(--mindset-bg); 
+      border: 1px dashed var(--accent-color); 
+      padding: 22px; 
+      border-radius: 8px; 
+      line-height: 1.7; 
+    }
     .empty-state { text-align: center; padding: 60px; color: var(--text-muted); }
+
+    /* 遮罩背景（手機端展開選單時用） */
+    .overlay {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background-color: rgba(0,0,0,0.5);
+      z-index: 850;
+    }
+
+    /* RWD 響應式調整（寬度小於 768px 觸發手機模式） */
+    @media (max-width: 768px) {
+      .mobile-header { display: flex; }
+      body { padding-top: 56px; }
+      .sidebar {
+        position: fixed;
+        top: 56px; bottom: 0; left: 0;
+        width: 280px;
+        transform: translateX(-100%);
+        box-shadow: 4px 0 12px var(--shadow-color);
+      }
+      .sidebar.open {
+        transform: translateX(0);
+      }
+      .overlay.active {
+        display: block;
+      }
+      .main-content {
+        padding: 20px 16px;
+      }
+      .lesson-card {
+        padding: 20px;
+      }
+      .meta-header h1 {
+        font-size: 1.3rem;
+      }
+      .sidebar-header .theme-toggle-btn {
+        display: none; /* 手機端主題切換在頂部 Mobile Header */
+      }
+    }
   </style>
 </head>
 <body>
-  <div class="sidebar">
+
+  <!-- 手機端頂部列 -->
+  <div class="mobile-header">
+    <button class="menu-toggle-btn" onclick="toggleSidebar()" aria-label="選單">☰</button>
+    <div class="mobile-title">帝王心術與國學筆記</div>
+    <button class="theme-toggle-btn" onclick="toggleTheme()" id="themeBtnMobile">🌙</button>
+  </div>
+
+  <!-- 背景遮罩 -->
+  <div class="overlay" id="overlay" onclick="closeSidebar()"></div>
+
+  <!-- 側邊欄 -->
+  <div class="sidebar" id="sidebar">
     <div class="sidebar-header">
-      <h2>📚 每日國學筆記</h2>
+      <div class="sidebar-title-row">
+        <h2>📚 每日國學筆記</h2>
+        <button class="theme-toggle-btn" onclick="toggleTheme()" id="themeBtnDesktop">🌙 深色</button>
+      </div>
       <input type="text" id="searchInput" class="search-input" placeholder="搜尋典故、出處或關鍵字..." oninput="filterTabs()">
     </div>
     <ul class="tab-list" id="tabList"></ul>
   </div>
+
+  <!-- 主內容區 -->
   <div class="main-content" id="mainContent">
     <div class="empty-state">資料載入中...</div>
   </div>
@@ -54,6 +276,49 @@
     let ALL_LESSONS = [];
     let currentTabId = 1;
 
+    // --- 1. 深色模式切換邏輯 ---
+    function initTheme() {
+      const savedTheme = localStorage.getItem('theme') || 'light';
+      document.documentElement.setAttribute('data-theme', savedTheme);
+      updateThemeBtnUI(savedTheme);
+    }
+
+    function toggleTheme() {
+      const currentTheme = document.documentElement.getAttribute('data-theme');
+      const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', newTheme);
+      localStorage.setItem('theme', newTheme);
+      updateThemeBtnUI(newTheme);
+    }
+
+    function updateThemeBtnUI(theme) {
+      const desktopBtn = document.getElementById('themeBtnDesktop');
+      const mobileBtn = document.getElementById('themeBtnMobile');
+      if (theme === 'dark') {
+        if (desktopBtn) desktopBtn.innerHTML = '☀️ 淺色';
+        if (mobileBtn) mobileBtn.innerHTML = '☀️';
+      } else {
+        if (desktopBtn) desktopBtn.innerHTML = '🌙 深色';
+        if (mobileBtn) mobileBtn.innerHTML = '🌙';
+      }
+    }
+
+    // --- 2. 手機版選單展開/收合邏輯 ---
+    function toggleSidebar() {
+      const sidebar = document.getElementById('sidebar');
+      const overlay = document.getElementById('overlay');
+      sidebar.classList.toggle('open');
+      overlay.classList.toggle('active');
+    }
+
+    function closeSidebar() {
+      const sidebar = document.getElementById('sidebar');
+      const overlay = document.getElementById('overlay');
+      sidebar.classList.remove('open');
+      overlay.classList.remove('active');
+    }
+
+    // --- 3. 資料載入邏輯 ---
     async function fetchJsonFile(fileName) {
       try {
         const res = await fetch(`./lessons/${fileName}?v=` + Date.now());
@@ -67,6 +332,8 @@
     }
 
     async function initApp() {
+      initTheme();
+
       const filesToLoad = [
         '1-15.json',
         '16-30.json',
@@ -110,7 +377,10 @@
       data.forEach(item => {
         const li = document.createElement('li');
         li.className = `tab-item ${item.id === currentTabId ? 'active' : ''}`;
-        li.onclick = () => selectTab(item.id);
+        li.onclick = () => {
+          selectTab(item.id);
+          closeSidebar(); // 手機點選選單後自動關閉側邊欄
+        };
         li.innerHTML = `<div class="lesson-num">第 ${item.id} 課 • ${item.date}</div><div class="lesson-title">${item.title}</div>`;
         tabList.appendChild(li);
       });
