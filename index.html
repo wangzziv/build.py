@@ -56,23 +56,49 @@
 
     async function initApp() {
       const mainContent = document.getElementById('mainContent');
-      try {
-        // 1. 先讀取課程索引清單 index.json
-        const indexRes = await fetch('./lessons/index.json?v=' + Date.now());
-        if (!indexRes.ok) throw new Error('找不到 lessons/index.json');
-        const fileList = await indexRes.json();
+      
+      // 自動探測與載入邏輯（每 15 課為一個區間檔案）
+      let batchIndex = 0;
+      let consecutiveFailures = 0;
+      const MAX_BATCHES = 100; // 最多掃描到第 1500 課
 
-        // 2. 自動併行讀取所有課程檔案
-        const fetchPromises = fileList.map(file => 
-          fetch(`./lessons/${file}?v=` + Date.now()).then(res => res.json())
-        );
-        const results = await Promise.all(fetchPromises);
+      while (batchIndex < MAX_BATCHES && consecutiveFailures < 2) {
+        const start = batchIndex * 15 + 1;
+        const end = (batchIndex + 1) * 15;
+        const fileName = `${start}-${end}.json`;
+        
+        try {
+          const res = await fetch(`./lessons/${fileName}?v=` + Date.now());
+          if (res.ok) {
+            const data = await res.json();
+            if (Array.isArray(data) && data.length > 0) {
+              ALL_LESSONS.push(...data);
+              consecutiveFailures = 0; // 成功抓到就重置失敗計數
+            }
+          } else {
+            consecutiveFailures++;
+          }
+        } catch (e) {
+          consecutiveFailures++;
+        }
+        batchIndex++;
+      }
 
-        // 3. 展平並彙整所有課程資料
-        ALL_LESSONS = results.flat();
-
-      } catch (err) {
-        console.error('Data load error:', err);
+      // 如果備用探測沒抓到，嘗試抓 index.json 作為後備相容
+      if (ALL_LESSONS.length === 0) {
+        try {
+          const indexRes = await fetch('./lessons/index.json?v=' + Date.now());
+          if (indexRes.ok) {
+            const fileList = await indexRes.json();
+            const fetchPromises = fileList.map(file => 
+              fetch(`./lessons/${file}?v=` + Date.now()).then(res => res.json())
+            );
+            const results = await Promise.all(fetchPromises);
+            ALL_LESSONS = results.flat();
+          }
+        } catch (e) {
+          console.log('後備索引讀取跳過');
+        }
       }
 
       if (ALL_LESSONS && ALL_LESSONS.length > 0) {
@@ -81,7 +107,7 @@
         renderTabs(ALL_LESSONS);
         selectTab(currentTabId);
       } else {
-        mainContent.innerHTML = '<div class="empty-state">尚未讀取到資料，請確認 lessons/index.json 與課程檔案。</div>';
+        mainContent.innerHTML = '<div class="empty-state">尚未讀取到資料，請確認 lessons/ 目錄下是否有課程 JSON 檔。</div>';
       }
     }
 
