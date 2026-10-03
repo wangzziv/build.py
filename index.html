@@ -69,11 +69,6 @@
       cursor: pointer;
       padding: 4px 8px;
     }
-    .mobile-title {
-      font-size: 1rem;
-      font-weight: 700;
-      color: var(--text-main);
-    }
 
     /* 主題切換按鈕 */
     .theme-toggle-btn {
@@ -202,7 +197,7 @@
     }
     .empty-state { text-align: center; padding: 60px; color: var(--text-muted); }
 
-    /* 遮罩背景（手機端展開選單時用） */
+    /* 遮罩背景 */
     .overlay {
       display: none;
       position: fixed;
@@ -211,7 +206,7 @@
       z-index: 850;
     }
 
-    /* RWD 響應式調整（寬度小於 768px 觸發手機模式） */
+    /* RWD 響應式調整 */
     @media (max-width: 768px) {
       .mobile-header { display: flex; }
       body { padding-top: 56px; }
@@ -238,7 +233,7 @@
         font-size: 1.3rem;
       }
       .sidebar-header .theme-toggle-btn {
-        display: none; /* 手機端主題切換在頂部 Mobile Header */
+        display: none;
       }
     }
   </style>
@@ -248,7 +243,6 @@
   <!-- 手機端頂部列 -->
   <div class="mobile-header">
     <button class="menu-toggle-btn" onclick="toggleSidebar()" aria-label="選單">☰</button>
-    <div class="mobile-title">每日國學筆記</div>
     <button class="theme-toggle-btn" onclick="toggleTheme()" id="themeBtnMobile">🌙</button>
   </div>
 
@@ -276,7 +270,7 @@
     let ALL_LESSONS = [];
     let currentTabId = 1;
 
-    // --- 1. 深色模式切換邏輯 ---
+    // 1. 深色模式切換邏輯
     function initTheme() {
       const savedTheme = localStorage.getItem('theme') || 'light';
       document.documentElement.setAttribute('data-theme', savedTheme);
@@ -303,7 +297,7 @@
       }
     }
 
-    // --- 2. 手機版選單展開/收合邏輯 ---
+    // 2. 手機版選單邏輯
     function toggleSidebar() {
       const sidebar = document.getElementById('sidebar');
       const overlay = document.getElementById('overlay');
@@ -318,7 +312,7 @@
       overlay.classList.remove('active');
     }
 
-    // --- 3. 資料載入邏輯 ---
+    // 3. 資料載入邏輯
     async function fetchJsonFile(fileName) {
       try {
         const res = await fetch(`./lessons/${fileName}?v=` + Date.now());
@@ -379,7 +373,7 @@
         li.className = `tab-item ${item.id === currentTabId ? 'active' : ''}`;
         li.onclick = () => {
           selectTab(item.id);
-          closeSidebar(); // 手機點選選單後自動關閉側邊欄
+          closeSidebar();
         };
         li.innerHTML = `<div class="lesson-num">第 ${item.id} 課 • ${item.date}</div><div class="lesson-title">${item.title}</div>`;
         tabList.appendChild(li);
