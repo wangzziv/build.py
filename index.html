@@ -50,10 +50,40 @@
     <div class="empty-state">資料載入中...</div>
   </div>
 
-  <script src="data.js"></script>
   <script>
-    let ALL_LESSONS = window.ALL_LESSONS_DATA || [];
+    let ALL_LESSONS = [];
     let currentTabId = 1;
+
+    async function initApp() {
+      const mainContent = document.getElementById('mainContent');
+      try {
+        // 1. 先讀取課程索引清單 index.json
+        const indexRes = await fetch('./lessons/index.json?v=' + Date.now());
+        if (!indexRes.ok) throw new Error('找不到 lessons/index.json');
+        const fileList = await indexRes.json();
+
+        // 2. 自動併行讀取所有課程檔案
+        const fetchPromises = fileList.map(file => 
+          fetch(`./lessons/${file}?v=` + Date.now()).then(res => res.json())
+        );
+        const results = await Promise.all(fetchPromises);
+
+        // 3. 展平並彙整所有課程資料
+        ALL_LESSONS = results.flat();
+
+      } catch (err) {
+        console.error('Data load error:', err);
+      }
+
+      if (ALL_LESSONS && ALL_LESSONS.length > 0) {
+        ALL_LESSONS.sort((a, b) => b.id - a.id);
+        currentTabId = ALL_LESSONS[0].id;
+        renderTabs(ALL_LESSONS);
+        selectTab(currentTabId);
+      } else {
+        mainContent.innerHTML = '<div class="empty-state">尚未讀取到資料，請確認 lessons/index.json 與課程檔案。</div>';
+      }
+    }
 
     function renderTabs(data) {
       const tabList = document.getElementById('tabList');
@@ -87,16 +117,7 @@
       renderTabs(filtered);
     }
 
-    window.onload = () => {
-      if (ALL_LESSONS && ALL_LESSONS.length > 0) {
-        ALL_LESSONS.sort((a, b) => b.id - a.id);
-        currentTabId = ALL_LESSONS[0].id;
-        renderTabs(ALL_LESSONS);
-        selectTab(currentTabId);
-      } else {
-        document.getElementById('mainContent').innerHTML = '<div class="empty-state">尚未讀取到資料，請確認 data.js 是否正確設定。</div>';
-      }
-    };
+    window.onload = initApp;
   </script>
 </body>
 </html>
